@@ -6,7 +6,7 @@ echo -n "" > /etc/exim4/exim4.conf.localmacros
 
 if [ "$MAILNAME" ]; then
 	echo "MAIN_HARDCODE_PRIMARY_HOSTNAME = $MAILNAME" > /etc/exim4/exim4.conf.localmacros
-	echo $MAILNAME > /etc/mailname
+	echo "$MAILNAME" > /etc/mailname
 fi
 
 if [ "$KEY_PATH" -a "$CERTIFICATE_PATH" ]; then
@@ -15,8 +15,8 @@ if [ "$KEY_PATH" -a "$CERTIFICATE_PATH" ]; then
 	else
 	  echo "MAIN_TLS_ENABLE = yes" >>  /etc/exim4/exim4.conf.localmacros
 	fi
-	cp $KEY_PATH /etc/exim4/exim.key
-	cp $CERTIFICATE_PATH /etc/exim4/exim.crt
+	cp "$KEY_PATH" /etc/exim4/exim.key
+	cp "$CERTIFICATE_PATH" /etc/exim4/exim.crt
 	chgrp Debian-exim /etc/exim4/exim.key
 	chgrp Debian-exim /etc/exim4/exim.crt
 	chmod 640 /etc/exim4/exim.key
@@ -26,7 +26,7 @@ fi
 opts=(
 	dc_local_interfaces "[0.0.0.0]:${PORT:-25} ; [::0]:${PORT:-25}"
 	dc_other_hostnames "${OTHER_HOSTNAMES}"
-	dc_relay_nets "$(ip addr show dev eth0 | awk '$1 == "inet" { print $2 }' | xargs | sed 's/ /:/g')${RELAY_NETWORKS}"
+	dc_relay_nets "${RELAY_NETWORKS}"
 )
 
 if [ "$DISABLE_IPV6" ]; then
@@ -39,7 +39,8 @@ if [ "$GMAIL_USER" -a "$GMAIL_PASSWORD" ]; then
 		dc_smarthost 'smtp.gmail.com::587'
 		dc_relay_domains "${RELAY_DOMAINS}"
 	)
-	echo "*.gmail.com:$GMAIL_USER:$GMAIL_PASSWORD" > /etc/exim4/passwd.client
+	echo "*.google.com:$GMAIL_USER:$GMAIL_PASSWORD" > /etc/exim4/passwd.client
+	echo "smtp.gmail.com:$GMAIL_USER:$GMAIL_PASSWORD" >> /etc/exim4/passwd.client
 elif [ "$SES_USER" -a "$SES_PASSWORD" ]; then
 	opts+=(
 		dc_eximconfig_configtype 'smarthost'
